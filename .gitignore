@@ -1,0 +1,8 @@
+#vs projects
+*.sln
+*.suo
+*.vcxproj*
+*.*sdf
+
+# IDEA projects
+.idea

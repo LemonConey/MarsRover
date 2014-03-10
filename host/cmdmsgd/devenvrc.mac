@@ -1,0 +1,5 @@
+GCCVER=-4.7
+export CC=gcc$GCCVER
+export CPP=cpp$GCCVER
+export CXX=g++$GCCVER
+export LD=g++$GCCVER
