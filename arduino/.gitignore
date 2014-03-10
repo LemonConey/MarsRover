@@ -1,0 +1,27 @@
+#ino projects
+.build
+
+#vs projects
+*.sln
+*.suo
+*.vcxproj*
+*.*sdf
+
+# external reference for ide
+libref
+sync-libref.sh
+
+# temp spike project
+spike/temp
+.idea
+
+# build intermadite files
+*.d
+*.o
+
+# blade intermediate files
+.Building.lock
+.sconsign.dblite
+blade-bin
+build??_release
+
