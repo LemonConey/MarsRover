@@ -1,0 +1,5 @@
+cc_config(
+  extra_incs = ['thirdparty',
+    'libcmdmsg'],
+  cxx_warnings = ['-Wall']
+)

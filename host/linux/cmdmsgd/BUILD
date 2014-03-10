@@ -1,5 +1,5 @@
 cc_binary(
-  name = 'cmdmsg',
+  name = 'cmdmsgd',
   srcs = ['main.cpp'],
   deps = ['//libcmdmsg/:cmdmsg']
 )
