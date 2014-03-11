@@ -45,6 +45,15 @@ extern "C" {
 
 #define _CMDMESSENGER_VERSION 3_3 // software version of this library
 
+#ifndef min
+#define min(a,b) ((a)<(b)?(a):(b))
+#endif // !min
+
+#ifndef strlcpy
+// todo - hehe, notice here if you are using string arg
+#define strlcpy strncpy
+#endif
+
 // **** Initialization **** 
 
 /**
