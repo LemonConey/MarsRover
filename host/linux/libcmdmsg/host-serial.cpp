@@ -24,9 +24,10 @@ int Stream::println() {
 }
 
 size_t Stream::readBytes(char *buffer, size_t length) {
+    size_t len = length;
     while (length--) {
         *(buffer++) = read();
     }
-    return 0;
+    return len;
 }
 

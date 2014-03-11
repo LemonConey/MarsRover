@@ -12,5 +12,6 @@ cc_library(
 cc_test(
   name = 'cmdmsgd-spec',
   srcs = ['spec/host-serial-spec.cpp'],
-  deps = [':cmdmsg']
+  deps = [':cmdmsg'],
+  extra_cppflags = ['-Wno-sign-compare', '-Wno-sequence-point']
 )
