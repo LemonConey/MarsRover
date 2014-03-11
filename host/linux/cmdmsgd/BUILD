@@ -1,7 +1,11 @@
 cc_binary(
   name = 'cmdmsgd',
-  srcs = ['main.cpp'],
-  deps = ['//libcmdmsg/:cmdmsg']
+  srcs = [
+    'main.cpp',
+    'serial-reader.cpp'
+    ],
+  deps = ['#serial', '//libcmdmsg/:cmdmsg'],
+  extra_cppflags = ['-std=c++11']
 )
 
 cc_test(
