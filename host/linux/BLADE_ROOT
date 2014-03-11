@@ -1,5 +1,14 @@
 cc_config(
-  extra_incs = ['thirdparty',
-    'libcmdmsg'],
+  extra_incs = [
+    'thirdparty',
+    'thirdparty/gtest',
+    'libcmdmsg'
+    ],
   cxx_warnings = ['-Wall']
 )
+
+cc_test_config(
+  gtest_libs='//thirdparty/gtest:gtest',
+  gtest_main_libs='//thirdparty/gtest:gtest_main'
+)
+
