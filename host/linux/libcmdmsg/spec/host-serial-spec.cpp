@@ -4,9 +4,11 @@
 #include "host-serial.h"
 
 using namespace std;
+using namespace std::tr1::placeholders;
 
 TEST(HostSerial, ShouldReadDataFeedOneByOne) {
-    HostSerial serial;
+    HostSerial::SendProc emptyProc;
+    HostSerial serial(emptyProc);
     serial.push(1);
     serial.push(3);
     serial.push(0);
@@ -24,7 +26,8 @@ TEST(HostSerial, ShouldReadDataFeedOneByOne) {
 }
 
 TEST(HostSerial, ShouldReadDataFeedInBatch) {
-    HostSerial serial;
+    HostSerial::SendProc emptyProc;
+    HostSerial serial(emptyProc);
 
     byte rawData[] = {1, 3, 5, 7, 9};
     
@@ -47,4 +50,23 @@ TEST(HostSerial, ShouldReadDataFeedInBatch) {
 
     byte dest[] = {1, 3, 5, 7, 9, 2, 4, 6, 8};
     ASSERT_EQ(0, memcmp(dest, readBuf, 9));
+}
+
+class MockSerialController {
+public:
+    MOCK_METHOD1(send, int(byte data));
+};
+
+TEST(HostSerial, ShouldCallSpecifiedSenderFunctionToSendData) {
+    MockSerialController controller;
+    HostSerial serial(tr1::bind(&MockSerialController::send, 
+        &controller, _1));
+
+    EXPECT_CALL(controller, send(1)).RetiresOnSaturation();
+    EXPECT_CALL(controller, send(3)).RetiresOnSaturation();
+    EXPECT_CALL(controller, send(2)).RetiresOnSaturation();
+
+    serial.print(1);
+    serial.print(3);
+    serial.print(2);
 }

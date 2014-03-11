@@ -3,14 +3,17 @@
 
 #include <deque>
 #include <algorithm>
+#include <tr1/functional>
 #include "arduino-stream.h"
 
 class HostSerial : public Stream 
 {
 public:
-    HostSerial();
-    virtual ~HostSerial();
     typedef std::deque<byte> SerialBuffer;
+    typedef std::tr1::function<int(byte)> SendProc;
+public:
+    HostSerial(SendProc sender);
+    virtual ~HostSerial();
 
     // override functions
     virtual int print(byte data);
@@ -26,7 +29,8 @@ public:
     }
 
 private:
-    SerialBuffer m_readBuffer;
+    SerialBuffer    m_readBuffer;
+    SendProc        m_sender;
 };
 
 #endif // HOST_SERIAL_H__

@@ -1,8 +1,8 @@
 #include "host-serial.h"
 
-HostSerial::HostSerial()
+HostSerial::HostSerial( SendProc sender )
 {
-
+    m_sender = sender;
 }
 
 HostSerial::~HostSerial()
@@ -12,8 +12,7 @@ HostSerial::~HostSerial()
 
 int HostSerial::print( byte data )
 {
-    // todo - move data to serial
-    return 0;
+    return m_sender(data);
 }
 
 size_t HostSerial::available()
