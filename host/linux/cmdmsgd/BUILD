@@ -6,6 +6,6 @@ cc_binary(
 
 cc_test(
   name = 'cmdmsgd-spec',
-  srcs = ['spec/host-serial-spec.cpp'],
+  srcs = [],
 )
 

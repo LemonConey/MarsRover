@@ -9,3 +9,8 @@ cc_library(
                     '-Wno-type-limits']
 )
 
+cc_test(
+  name = 'cmdmsgd-spec',
+  srcs = ['spec/host-serial-spec.cpp'],
+  deps = [':cmdmsg']
+)
