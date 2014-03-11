@@ -4,3 +4,8 @@ cc_binary(
   deps = ['//libcmdmsg/:cmdmsg']
 )
 
+cc_test(
+  name = 'cmdmsgd-spec',
+  srcs = ['spec/host-serial-spec.cpp'],
+)
+
