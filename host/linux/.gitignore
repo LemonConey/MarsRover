@@ -4,3 +4,4 @@
 blade-bin
 build??_release
 .blade.test.stamp
+BLADE_ROOT.py
