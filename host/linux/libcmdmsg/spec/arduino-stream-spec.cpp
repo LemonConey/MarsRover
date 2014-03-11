@@ -1,5 +1,5 @@
 #include "spec_helper.h"
-#include "host-serial.h"
+#include "arduino-stream.h"
 
 class MockStream : public Stream {
 public:

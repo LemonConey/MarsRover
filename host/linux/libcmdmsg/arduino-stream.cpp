@@ -1,4 +1,4 @@
-#include "host-serial.h"
+#include "arduino-stream.h"
 
 #define NEWLINE "\r\n"
 

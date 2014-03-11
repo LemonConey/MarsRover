@@ -1,5 +1,5 @@
-#ifndef __HOST_SERIAL_H__
-#define __HOST_SERIAL_H__
+#ifndef __ARDUINO_STREAM_H__
+#define __ARDUINO_STREAM_H__
 
 #include "stdint.h"
 #include <string.h>
@@ -35,4 +35,4 @@ public:
     size_t readBytes(char *buffer, size_t length);
 };
 
-#endif // HOST_SERIAL_H__
+#endif // __ARDUINO_STREAM_H__

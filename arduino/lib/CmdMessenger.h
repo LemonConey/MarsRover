@@ -33,7 +33,7 @@
 #include <WProgram.h> 
 #endif
 #else
-#include "host-serial.h"
+#include "arduino-stream.h"
 #endif
 
 //#include "Stream.h"
