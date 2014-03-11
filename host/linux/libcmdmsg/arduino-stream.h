@@ -5,11 +5,6 @@
 #include <string.h>
 #include <sys/time.h>
 
-#define min(a,b) ((a)<(b)?(a):(b))
-
-// todo - hehe, notice here if you are using string arg
-#define strlcpy strncpy
-
 typedef uint8_t byte;
 
 inline static unsigned long millis()

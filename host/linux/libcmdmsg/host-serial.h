@@ -12,7 +12,7 @@ public:
     typedef std::deque<byte> SerialBuffer;
     typedef std::tr1::function<int(byte)> SendProc;
 public:
-    HostSerial(SendProc sender);
+    HostSerial(const SendProc &sender);
     virtual ~HostSerial();
 
     // override functions

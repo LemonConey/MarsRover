@@ -1,6 +1,6 @@
 #include "host-serial.h"
 
-HostSerial::HostSerial( SendProc sender )
+HostSerial::HostSerial(const SendProc &sender )
 {
     m_sender = sender;
 }
