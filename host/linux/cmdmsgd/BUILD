@@ -5,7 +5,7 @@ cc_binary(
     'serial-reader.cpp'
     ],
   deps = ['#serial', '//libcmdmsg/:cmdmsg'],
-  extra_cppflags = ['-std=c++11']
+  extra_cppflags = ['-std=gnu++0x']
 )
 
 cc_test(

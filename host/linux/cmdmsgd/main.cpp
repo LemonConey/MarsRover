@@ -3,23 +3,9 @@
 #include "CmdMessenger.h"
 
 using namespace std;
+using namespace std::tr1::placeholders;
+
 using namespace LibSerial;
-
-
-// seems that lambda won't work here in this version
-class SerialStreamSenderContainer {
-public:
-    SerialStreamSenderContainer(SerialStream *serialStream) {
-        m_serialStream = serialStream;
-    }
-    int operator()(byte data) {
-        m_serialStream->put(data);
-        return 0;
-    }
-
-private:
-    SerialStream *m_serialStream;
-};
 
 int main(int argc, char **argv) {
     SerialStream realSerial("/dev/ttyUSB0",
@@ -29,14 +15,14 @@ int main(int argc, char **argv) {
         1,
         SerialStreamBuf::FLOW_CONTROL_NONE);
 
-    // hehe here
-    HostSerial *hostSerial = new HostSerial(SerialStreamSenderContainer(&realSerial));
-    
+    HostSerial *hostSerial = new HostSerial([&](byte data) {
+        realSerial.put(data);
+        return 0;
+    });
 
-    SerialReader serialReader(&realSerial, [=](byte data) {
-        hostSerial = 0;
-        printf("read %02hhx len:%d\n", 1, 1);
-
+    SerialReader serialReader(&realSerial, [&](byte data) {
+        hostSerial->push(data);
+        printf("read %02hhx len:%zd\n", data, hostSerial->available());
     });
 
     serialReader.run();
