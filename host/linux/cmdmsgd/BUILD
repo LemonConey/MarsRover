@@ -2,9 +2,9 @@ cc_binary(
   name = 'cmdmsgd',
   srcs = [
     'main.cpp',
-    'serial-reader.cpp'
+    'blocking-reader.cpp'
     ],
-  deps = ['#serial', '//libcmdmsg/:cmdmsg'],
+  deps = ['#serial', '#PocoFoundation', '#PocoNet', '//libcmdmsg/:cmdmsg'],
   extra_cppflags = ['-std=gnu++0x']
 )
 
