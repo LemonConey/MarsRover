@@ -1,0 +1,25 @@
+require 'awesome_print'
+
+# load all library
+Dir.glob(File.expand_path("../lib/*.rb", __FILE__)).each do |file|
+  require file
+end
+
+# load all library
+Dir.glob(File.expand_path("../helpers/*.rb", __FILE__)).each do |file|
+  require file
+end
+
+# load rake tasks
+Dir.glob(File.expand_path("../tasks/*.rake", __FILE__)).each do |file|
+  load file
+end
+
+# load rake tasks
+Dir.glob(File.expand_path("../spike/*.rake", __FILE__)).each do |file|
+  load file
+end
+
+task :default do
+  #ap "do nothing"
+end
