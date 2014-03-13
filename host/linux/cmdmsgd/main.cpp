@@ -6,6 +6,7 @@
 
 #include "host-serial.h"
 #include "CmdMessenger.h"
+#include "udp-message.h"
 
 
 
@@ -95,19 +96,11 @@ int main(int argc, char **argv) {
             char buf[4096];
             int ret = get_udp_conn()->receiveBytes(buf, sizeof(buf));
             assert(ret > 0);
-            {
-                buf[ret] = 0;
-                char *newline = strchr(buf, '\n');
-                if (newline){
-                    *newline = 0;
-                }
-
-            }
-            printf("send command [%s]\n", buf);
-
-            for_each(buf, buf + ret,[](char data){
-                get_host_serial()->print(data);
-            });
+            UdpMessage msg(buf, ret);
+            printf("%hhu %hhu %d\n",
+                msg.getHeader()->type,
+                msg.getHeader()->size,
+                msg.isVaild());
         }
         printf("udp thread out\n");
     }, NULL);
