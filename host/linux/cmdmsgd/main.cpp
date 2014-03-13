@@ -8,13 +8,12 @@
 #include "CmdMessenger.h"
 #include "udp-message.h"
 
-
+#include "movement.h"
 
 using namespace std;
 using namespace std::tr1::placeholders;
 using namespace Poco;
 using namespace Poco::Net;
-
 
 
 using namespace LibSerial;
