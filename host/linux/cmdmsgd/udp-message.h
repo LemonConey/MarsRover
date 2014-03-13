@@ -13,23 +13,26 @@ public:
     } Header;
 
     UdpMessage() {
-        m_msgbuf = m_buffer + sizeof(Header);
-        m_header = (Header *)m_buffer;
+        initHelperMember();
+
+        printf("buffer:%p msg:%p header:%p\n", m_buffer, m_msgbuf, m_header);
     }
     UdpMessage(const char *buffer, size_t size) {
-        UdpMessage();
+        initHelperMember();
+        printf("buffer:%p msg:%p header:%p\n", m_buffer, m_msgbuf, m_header);
+        printf("copy %lu bytes\n", size);
         memcpy(m_buffer, buffer, size);
+        printf("copy %lu bytes to %p\n", size, m_buffer);
     }
     
     UdpMessage(uint8_t type, const char *message, size_t size) {
-        UdpMessage();
+        initHelperMember();
         m_header->size = size;
         m_header->type = type;
         memcpy(m_msgbuf, message, size);
     }
 
     virtual ~UdpMessage() {
-
     }
 
     bool isVaild() {
@@ -41,6 +44,7 @@ public:
     }
 
     Header *getHeader() {
+        printf("header:%p\n", m_header);
         return m_header;
     }
 
@@ -55,6 +59,10 @@ public:
     }
 
 private:
+    void initHelperMember() {
+        m_msgbuf = m_buffer + sizeof(Header);
+        m_header = (Header *)m_buffer;
+    }
     char    m_buffer[UDPMSG_BUFFER_SIZE + sizeof(Header)];
     char    *m_msgbuf;
     Header  *m_header;

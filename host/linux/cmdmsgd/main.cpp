@@ -1,9 +1,9 @@
+#include <stddef.h>
 #include <assert.h>
 #include <functional>
 #include <SerialStream.h>
 #include <Poco/Net/DatagramSocket.h>
 #include <Poco/Thread.h>
-
 #include "host-serial.h"
 #include "CmdMessenger.h"
 #include "udp-message.h"
@@ -97,10 +97,10 @@ int main(int argc, char **argv) {
             int ret = get_udp_conn()->receiveBytes(buf, sizeof(buf));
             assert(ret > 0);
             UdpMessage msg(buf, ret);
-            printf("%hhu %hhu %d\n",
+            printf("%hhu %hhu %hu\n",
                 msg.getHeader()->type,
                 msg.getHeader()->size,
-                msg.isVaild());
+                msg.getHeader()->chechsum);           
         }
         printf("udp thread out\n");
     }, NULL);
@@ -112,16 +112,16 @@ int main(int argc, char **argv) {
     //    get_cmd_messenger()->feedinSerialData();
     //}
 
-    serialThread.start([&](void *){
-        while (1)
-        {
-            byte data = get_serial_conn()->get();
-            get_host_serial()->push(data);
-            //printf("read %02hhx len:%zd\n", data, get_host_serial()->available());
-            printf("%c", get_host_serial()->read());
-        }
-        printf("serial thread out\n");
-    }, NULL);
+    //serialThread.start([&](void *){
+    //    while (1)
+    //    {
+    //        byte data = get_serial_conn()->get();
+    //        get_host_serial()->push(data);
+    //        //printf("read %02hhx len:%zd\n", data, get_host_serial()->available());
+    //        printf("%c", get_host_serial()->read());
+    //    }
+    //    printf("serial thread out\n");
+    //}, NULL);
 
     udpThread.join();
     serialThread.join();
