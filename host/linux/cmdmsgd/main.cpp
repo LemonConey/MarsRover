@@ -1,13 +1,12 @@
 #include <assert.h>
-
 #include <functional>
-
-#include "host-serial.h"
-#include "blocking-reader.h"
-#include "CmdMessenger.h"
-
+#include <SerialStream.h>
 #include <Poco/Net/DatagramSocket.h>
 #include <Poco/Thread.h>
+
+#include "host-serial.h"
+#include "CmdMessenger.h"
+
 
 
 using namespace std;
@@ -22,6 +21,7 @@ using namespace LibSerial;
 // #define SERIAL_PORT "/dev/ttyUSB0"
 #define SERIAL_PORT "/dev/ttyACM0"
 
+#define DEBUG
 
 SerialStream *get_serial_conn() {
     static SerialStream *realSerial = NULL;
@@ -42,7 +42,13 @@ SerialStream *get_serial_conn() {
 
 HostSerial *get_host_serial() {
     static HostSerial *hostSerial = new HostSerial([&](byte data) {
+#ifndef DEBUG
         get_serial_conn()->put(data);
+#else
+        printf("%c", data);
+        fflush(stdout);
+#endif // DEBUG
+
         return 0;
     });
     return hostSerial;
@@ -58,18 +64,30 @@ DatagramSocket *get_udp_conn() {
         catch (exception &e) {
             printf("exception %s\n", e.what());
         }
-
     }
 
     return udpSocket;
 }
+
+CmdMessenger *get_cmd_messenger() {
+    static CmdMessenger *msg = new CmdMessenger(*get_host_serial());
+    return msg;
+}
+
 int main(int argc, char **argv) {
 
-    assert(get_serial_conn());
+    if (!get_serial_conn()) {
+        printf("can't open serial %s\n", SERIAL_PORT);
+        return -1;
+    }
 
     printf("cmdmsg started\n");
 
     Thread udpThread, serialThread;
+
+    //get_cmd_messenger()->attach(1, [] {
+    //    printf("%s\n", get_cmd_messenger()->readStringArg());
+    //});
 
     udpThread.start([&](void *){
         while (1)
@@ -91,7 +109,15 @@ int main(int argc, char **argv) {
                 get_host_serial()->print(data);
             });
         }
+        printf("udp thread out\n");
     }, NULL);
+
+    //{
+    //    get_cmd_messenger()->sendCmd('1', "hehe");
+    //    string cmd = "1,aa/a/haha;";
+    //    get_host_serial()->push(cmd.begin(), cmd.end());
+    //    get_cmd_messenger()->feedinSerialData();
+    //}
 
     serialThread.start([&](void *){
         while (1)
@@ -101,6 +127,7 @@ int main(int argc, char **argv) {
             //printf("read %02hhx len:%zd\n", data, get_host_serial()->available());
             printf("%c", get_host_serial()->read());
         }
+        printf("serial thread out\n");
     }, NULL);
 
     udpThread.join();
