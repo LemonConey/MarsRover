@@ -9,13 +9,13 @@ namespace Protocol {
 #define MOVEMENT_MAX_POWER      255
 #define MOVEMENT_MOTOR_COUNT    2
 
-    typedef struct Motor{
+    struct Motor{
         int16_t     power;
         uint16_t    duration;
     } __attribute__ ((__packed__));
 
 
-    typedef struct Movement{
+    struct Movement{
         Motor       motors[MOVEMENT_MOTOR_COUNT];
     } __attribute__ ((__packed__));
 };

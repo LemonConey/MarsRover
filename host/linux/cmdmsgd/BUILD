@@ -4,7 +4,7 @@ cc_binary(
     'main.cpp'
     ],
   deps = ['#serial', '#PocoFoundation', '#PocoNet', '//libcmdmsg/:cmdmsg'],
-  extra_cppflags = ['-std=gnu++0x']
+  extra_cppflags = ['-std=gnu++0x', '-Wno-unused-value']
 )
 
 cc_test(

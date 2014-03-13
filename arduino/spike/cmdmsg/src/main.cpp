@@ -14,15 +14,15 @@ void loop();
 
 LCD1602 lcd;
 SoftwareSerial s1(S1RX, S1TX);
-CmdMessenger cmdMessenger = CmdMessenger(s1);
+CmdMessenger cmdmsg = CmdMessenger(s1);
 
 void setup()
 {
     lcd.printAt(0, "ready for serial!");
     s1.begin(9600);
     s1.println("hello");
-    cmdMessenger.printLfCr();   
-    cmdMessenger.sendCmd(0,"Arduino has /;,started!");
+    cmdmsg.printLfCr();   
+    cmdmsg.sendCmd(0,"Arduino has /;,started!");
 }
 
 void loop()

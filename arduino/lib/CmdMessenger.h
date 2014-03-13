@@ -273,6 +273,20 @@ public:
 	  return (T)0;
   }
 
+    /**
+   * Read an argument of any type in binary format
+   */  
+  template < class T > bool readBinArg (T &arg)
+  {
+    if (next ())
+      {
+        dumped = true;
+        arg = readBin < T > (current);
+        return true;
+      }
+	  return false;
+  }
+
   // **** Escaping tools ****
   
   void unescape (char *fromChar);	

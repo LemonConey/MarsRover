@@ -21,7 +21,7 @@ using namespace LibSerial;
 // #define SERIAL_PORT "/dev/ttyUSB0"
 #define SERIAL_PORT "/dev/ttyACM0"
 
-#define DEBUG
+//#define DEBUG
 
 SerialStream *get_serial_conn() {
     static SerialStream *realSerial = NULL;
@@ -34,6 +34,7 @@ SerialStream *get_serial_conn() {
             SerialStreamBuf::FLOW_CONTROL_NONE);
         if (!realSerial->good()) {
             delete realSerial;
+            realSerial = NULL;
         }
     }
 
@@ -42,13 +43,10 @@ SerialStream *get_serial_conn() {
 
 HostSerial *get_host_serial() {
     static HostSerial *hostSerial = new HostSerial([&](byte data) {
+        printf("send %02hhX(%c)\n", data, isprint(data) ? data : '?');
 #ifndef DEBUG
         get_serial_conn()->put(data);
-#else
-        printf("%c", data);
-        fflush(stdout);
 #endif // DEBUG
-
         return 0;
     });
     return hostSerial;
@@ -74,6 +72,15 @@ CmdMessenger *get_cmd_messenger() {
     return msg;
 }
 
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+
+#ifdef NDEBUG
+#define ensure(x)   x
+#else
+#define ensure      assert
+#endif
+
+
 int main(int argc, char **argv) {
 
     if (!get_serial_conn()) {
@@ -85,10 +92,6 @@ int main(int argc, char **argv) {
 
     Thread udpThread, serialThread;
 
-    //get_cmd_messenger()->attach(1, [] {
-    //    printf("%s\n", get_cmd_messenger()->readStringArg());
-    //});
-
     udpThread.start([&](void *){
         while (1)
         {
@@ -96,21 +99,26 @@ int main(int argc, char **argv) {
             int ret = get_udp_conn()->receiveBytes(buf, sizeof(buf));
             assert(ret > 0);
             UdpMessage msg(buf, ret);
-            printf("%hhu %hhu %hu\n",
+            printf("type:%hhu size:%hhu chechsum:%hu\n",
                 msg.getHeader()->type,
                 msg.getHeader()->size,
-                msg.getHeader()->chechsum);           
+                msg.getHeader()->chechsum);         
+            Protocol::Movement *mm = msg.getMessage<Protocol::Movement>();
+            for (size_t i = 0; i < ARRAY_SIZE(mm->motors); ++i) {
+                printf("motor[%zu] - power:%hd duration:%hu\n",
+                    i, mm->motors[i].power, mm->motors[i].duration);
+            }
+
+#ifndef DEBUG
+            // send the command to arduino
+            ensure(get_cmd_messenger()->sendBinCmd(
+                msg.getHeader()->type, *mm));
+#endif
         }
         printf("udp thread out\n");
     }, NULL);
 
-    //{
-    //    get_cmd_messenger()->sendCmd('1', "hehe");
-    //    string cmd = "1,aa/a/haha;";
-    //    get_host_serial()->push(cmd.begin(), cmd.end());
-    //    get_cmd_messenger()->feedinSerialData();
-    //}
-
+    // don't care the upstream now
     //serialThread.start([&](void *){
     //    while (1)
     //    {
