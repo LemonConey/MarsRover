@@ -10,6 +10,11 @@ Dir.glob(File.expand_path("../helpers/*.rb", __FILE__)).each do |file|
   require file
 end
 
+# load all protocol
+Dir.glob(File.expand_path("../proto/*.rb", __FILE__)).each do |file|
+  require file
+end
+
 # load rake tasks
 Dir.glob(File.expand_path("../tasks/*.rake", __FILE__)).each do |file|
   load file
