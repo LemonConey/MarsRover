@@ -1,6 +1,9 @@
 #ifndef __SMSG_CODER_H__
 #define __SMSG_CODER_H__
 
+#include <memory.h>
+#include <stdlib.h>
+
 #define SMSG_DECODER_BUFFER_SIZE    256
 
 class SMessageCoder {
