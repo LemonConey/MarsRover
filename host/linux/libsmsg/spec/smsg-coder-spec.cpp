@@ -57,6 +57,9 @@ static void DecodeCallback(const char *buf, size_t size, void *userdata) {
     ASSERT_GE(sizeof(msg.buffer), size);
     memcpy(msg.buffer, buf, size);
     msg.size = size;
+
+    Messages *messages = (Messages *)userdata;
+    messages->push_back(msg);
 }
 
 TEST(SMessageCoder, ShouldCallTheCallbackProcWhenDataIsDecoded) {
@@ -95,5 +98,5 @@ TEST(SMessageCoder, ShouldCallTheCallbackForEachMessage) {
     ASSERT_EQ(0, memcmp(decodedMessage[0],
         messages[0].buffer, strlen(decodedMessage[0])));
     ASSERT_EQ(0, memcmp(decodedMessage[1],
-        messages[0].buffer, strlen(decodedMessage[1])));
+        messages[1].buffer, strlen(decodedMessage[1])));
 }

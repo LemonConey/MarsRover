@@ -11,6 +11,8 @@ public:
     {
         memset(m_buffer, 0, sizeof(m_buffer));
         m_buffer_index = 0;
+        m_error = false;
+        m_escaping = false;
     }
 
     ~SMessageCoder() {
@@ -48,16 +50,54 @@ public:
     }
 
     void feed(const char data) {
-
+        if (m_escaping) {
+            feedByte(data);
+            m_escaping = false;
+        } 
+        else if (data == m_escaper) {
+            m_escaping = true;
+        }
+        else if (data == m_delimiter) {
+            endMessage();
+        }
+        else {
+            feedByte(data);
+        }
     }
 
     void onDecode(DecoderCallbackProc callback, void *userdata) {
         m_decode_callback = callback;
+        m_userdata = userdata;
     }
 
 private:
     bool needEscape(const char data) {
         return (data == m_delimiter || data == m_escaper);
+    }
+
+    void feedByte(const char data) {
+        if (!m_error) {
+            if (m_buffer_index >= sizeof(m_buffer)) {
+                // if buffer is full, ignore current message
+                m_error = true;
+                return;
+            }
+
+            m_buffer[m_buffer_index++] = data;
+        }
+    }
+
+    void endMessage() {
+        if (m_error) {
+            // reset error, ready for next message
+            m_error = false;
+        }
+        else if (m_decode_callback) {
+            m_decode_callback(m_buffer, m_buffer_index, m_userdata);
+        }
+
+        // reset buffer, process next message;
+        m_buffer_index = 0;
     }
 
     DecoderCallbackProc     m_decode_callback;
@@ -66,6 +106,8 @@ private:
     const char              m_escaper;
     char                    m_buffer[SMSG_DECODER_BUFFER_SIZE];
     size_t                  m_buffer_index;
+    bool                    m_escaping;
+    bool                    m_error;
 };
 
 #endif // __SMSG_CODER_H__
