@@ -2,7 +2,7 @@ cc_config(
   extra_incs = [
     'thirdparty',
     'thirdparty/gtest',
-    'libcmdmsg',
+    'libsmsg',
     'protocol'
     ],
   cxx_warnings = ['-Wall']
