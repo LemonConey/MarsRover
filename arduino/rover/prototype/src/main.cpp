@@ -32,6 +32,9 @@ void loop()
         get_smessage()->send(2, str, strlen(str));
     });
 
+    set_interval(1, {
+        update_motor_state();
+    });
     //set_interval(100, {
     //    lcd.printAt(0, "%02d bytes on wire", s1.available());
     //});

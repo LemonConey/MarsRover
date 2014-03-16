@@ -20,6 +20,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Decleration
 void setup_motor_control();
+void update_motor_state();
 
 void init_smessage(Stream *comm);
 SMessage *get_smessage();
