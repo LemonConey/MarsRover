@@ -19,17 +19,22 @@ public:
     }
 
     int receive(char *outBuffer, size_t outSize) {
-        size_t pos = 0;
-        while (available() && pos < outSize)
-        {
-            outBuffer[pos++] = receive();
+        if (!outSize) {
+            return 0;
         }
+
+        size_t pos = 0;
+        do {
+            outBuffer[pos++] = receive();
+        }while (available() && pos < outSize);
+
         return (int)pos;
     }
 protected:
     virtual void send(const char data) = 0;
     virtual char receive() = 0;
-    virtual bool available() = 0;
+    // optional 
+    virtual bool available() {return false;}
 };
 
 

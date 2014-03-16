@@ -83,9 +83,7 @@ Thread *create_serial_thread() {
         });
 
         while (1) {
-            if (get_serial_smsg()->feed() == 0) {
-                usleep(1000);
-            }
+            get_serial_smsg()->feed();
         }
     });
     return thread;
