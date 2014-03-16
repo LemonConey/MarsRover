@@ -17,8 +17,11 @@ public:
     bool send(uint8_t type, const char *buffer, size_t size);
 
     int feed();
-    void onMessage(uint8_t type, SMessagePDU::MessageCallbackProc callback);
-    void onUnhandledMessage(SMessagePDU::MessageCallbackProc callback);
+    void onMessage(uint8_t type, 
+        SMessagePDU::MessageCallbackProc callback,
+        void *userdata);
+    void onUnhandledMessage(SMessagePDU::MessageCallbackProc callback,
+        void *userdata);
 private:
     SMessagePDU     m_msgPdu;
     SMessageSource  *m_msgSrouce;

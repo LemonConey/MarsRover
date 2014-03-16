@@ -27,7 +27,7 @@ public:
         char    data[];
     };
     
-    typedef void(*MessageCallbackProc)(Message *message);
+    typedef void(*MessageCallbackProc)(Message *message, void *userdata);
 
     SMessagePDU();
     virtual ~SMessagePDU();
@@ -43,12 +43,13 @@ public:
 
 
     void feed(const char data);
-    void onMessage(uint8_t type, MessageCallbackProc callback);
-    void onUnhandledMessage(MessageCallbackProc callback);
+    void onMessage(uint8_t type, MessageCallbackProc callback, void *userdata = NULL);
+    void onUnhandledMessage(MessageCallbackProc callback, void *userdata = NULL);
 private:
     struct MessageCallbackEntry {
         uint8_t             type;
         MessageCallbackProc callback;
+        void                *userdata;
     };
     void processRawMessage(const char *buf, size_t size);
     static void rawMessageCallback(const char *buf, size_t size, void *arg);
@@ -56,7 +57,7 @@ private:
 
     SMessageCoder                   m_coder;
     MessageCallbackEntry            m_callbacks[SMSG_PDU_MAX_CALLBACK_COUNT];
-    MessageCallbackProc             m_default_callback;
+    MessageCallbackEntry            m_default_callback;
 };
 
 #endif // __SMSG_PDU_H__

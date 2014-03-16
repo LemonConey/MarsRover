@@ -1,14 +1,17 @@
 #include <alloca.h>
 #include "smessage.h"
 
-void SMessage::onUnhandledMessage( SMessagePDU::MessageCallbackProc callback )
+void SMessage::onUnhandledMessage( SMessagePDU::MessageCallbackProc callback ,
+                                  void *userdata)
 {
-    m_msgPdu.onUnhandledMessage(callback);
+    m_msgPdu.onUnhandledMessage(callback, userdata);
 }
 
-void SMessage::onMessage( uint8_t type, SMessagePDU::MessageCallbackProc callback )
+void SMessage::onMessage( uint8_t type,
+                         SMessagePDU::MessageCallbackProc callback,
+                         void *userdata )
 {
-    m_msgPdu.onMessage(type, callback);
+    m_msgPdu.onMessage(type, callback, userdata);
 }
 
 int SMessage::feed()

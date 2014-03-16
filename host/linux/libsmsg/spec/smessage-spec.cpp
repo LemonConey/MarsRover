@@ -43,16 +43,15 @@ TEST(SMessage, ShouldSendEncodedDataViaSourceInterface){
     EXPECT_EQ(data, *(int*)&fakeSource.sendBuffer[2]);
 }
 
-static SMessagePDU::Message *message = NULL;
-static void MessageCallback(SMessagePDU::Message *msg) {
-    message = msg;
+static void MessageCallback(SMessagePDU::Message *msg, void *userdata) {
+    *(SMessagePDU::Message **)userdata = msg;
 }
 
 TEST(SMessage, ShouldCallTheCorrespondingCallbackOnReceive){
     FakeSource fakeSource;
     SMessage smsg(&fakeSource);
-
-    smsg.onMessage(3, MessageCallback);
+    SMessagePDU::Message *message = NULL;
+    smsg.onMessage(3, MessageCallback, &message);
 
     fakeSource.receiveBuffer.push_back(0x03);
     fakeSource.receiveBuffer.push_back(0x04);

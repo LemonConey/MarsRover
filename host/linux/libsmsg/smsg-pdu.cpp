@@ -5,7 +5,7 @@
 void SMessagePDU::setupRawMessageCallback()
 {
     memset(m_callbacks, 0, sizeof(m_callbacks));
-    m_default_callback = NULL;
+    memset(&m_default_callback, 0, sizeof(m_default_callback));
     m_coder.onDecode(rawMessageCallback, this);
 }
 
@@ -29,13 +29,13 @@ void SMessagePDU::processRawMessage( const char *buf, size_t size )
             break;
         }
         if (m_callbacks[i].type == msg->type) {
-            m_callbacks[i].callback(msg);
+            m_callbacks[i].callback(msg, m_callbacks[i].userdata);
             return ;
         }
     }
-    
-    if (m_default_callback) {
-        m_default_callback(msg);
+
+    if (m_default_callback.callback) {
+        m_default_callback.callback(msg, m_default_callback.userdata);
     }
 }
 
@@ -44,12 +44,13 @@ void SMessagePDU::feed( const char data )
     m_coder.feed(data);
 }
 
-void SMessagePDU::onUnhandledMessage( MessageCallbackProc callback )
+void SMessagePDU::onUnhandledMessage( MessageCallbackProc callback, void *userdata )
 {
-    m_default_callback = callback;
+    m_default_callback.callback = callback;
+    m_default_callback.userdata = userdata;
 }
 
-void SMessagePDU::onMessage( uint8_t type, MessageCallbackProc callback )
+void SMessagePDU::onMessage( uint8_t type, MessageCallbackProc callback, void *userdata  )
 {
     MessageCallbackEntry *entry = NULL;
     for (size_t i = 0; i < SMSG_PDU_MAX_CALLBACK_COUNT; ++i) {
@@ -64,11 +65,12 @@ void SMessagePDU::onMessage( uint8_t type, MessageCallbackProc callback )
             break;
         }
     }
- 
+
     // if entry is null, you need to enlarge the SMSG_PDU_MAX_CALLBACK_COUNT
     assert(entry);
     entry->type = type;
     entry->callback = callback;
+    entry->userdata = userdata;
 }
 
 bool SMessagePDU::encode( uint8_t type, const char *inbuf, size_t insize, char *outbuf, size_t *outsize )

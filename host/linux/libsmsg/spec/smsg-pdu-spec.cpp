@@ -31,12 +31,13 @@ protected:
     SMessagePDU     *msgpdu;
 };
 
-SMessagePDU::Message *message = NULL;
-void MessageContentCallback(SMessagePDU::Message *msg) {
-    message = msg;
+void MessageContentCallback(SMessagePDU::Message *msg, void *userdata) {
+    *(SMessagePDU::Message **)userdata = msg;
 }
+
 TEST_F(SMessagePDUSpec, ShouldCallTheMessageProcWithMessageHeader) {
-    msgpdu->onMessage(0, MessageContentCallback);
+    SMessagePDU::Message *message = NULL;
+    msgpdu->onMessage(0, MessageContentCallback, (void *)&message);
 
     int data = 0x9527;
     vector<char> buffer;
@@ -47,17 +48,18 @@ TEST_F(SMessagePDUSpec, ShouldCallTheMessageProcWithMessageHeader) {
     ASSERT_NE((void *)NULL, message);
     EXPECT_EQ(0, message->type);
     EXPECT_EQ(sizeof(data), message->size);
-    EXPECT_EQ(data, *(int*)message->data);
+    EXPECT_EQ(0, memcmp(&data, message->data, sizeof(data)));
 }
 
-map<int, unsigned int> callbackCount;
-void MessageCountCallback(SMessagePDU::Message *msg) {
+void MessageCountCallback(SMessagePDU::Message *msg, void *userdata) {
+    map<int, unsigned int> &callbackCount = *( map<int, unsigned int> *)userdata;
     ++callbackCount[msg->type];
 }
 
 TEST_F(SMessagePDUSpec, ShouldCallTheMessageProcByType) {
-    msgpdu->onMessage(0, MessageCountCallback);
-    msgpdu->onMessage(1, MessageCountCallback);
+    map<int, unsigned int> callbackCount;
+    msgpdu->onMessage(0, MessageCountCallback, &callbackCount);
+    msgpdu->onMessage(1, MessageCountCallback, &callbackCount);
 
     int data = 0;
     vector<char> buffer;
@@ -74,7 +76,8 @@ TEST_F(SMessagePDUSpec, ShouldCallTheMessageProcByType) {
 }
 
 TEST_F(SMessagePDUSpec, ShouldCallTheDefaultProcForUnhandledMessage) {
-    msgpdu->onUnhandledMessage(MessageCountCallback);
+    map<int, unsigned int> callbackCount;
+    msgpdu->onUnhandledMessage(MessageCountCallback, &callbackCount);
 
     int data = 0;
     vector<char> buffer;
