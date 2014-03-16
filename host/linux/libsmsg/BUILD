@@ -14,6 +14,5 @@ cc_test(
   'spec/smsg-coder-spec.cpp',
   'spec/smsg-pdu-spec.cpp'
   ],
-  deps = [':smsg'],
-  extra_cppflags = ['-std=gnu++0x']
+  deps = [':smsg']
 )
