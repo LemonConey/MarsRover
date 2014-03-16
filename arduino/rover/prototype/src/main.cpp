@@ -40,34 +40,53 @@ void setup_l298n() {
     }
 }
 
-void movement_callback(void) {
-    Protocol::Movement mm;
-    //int res = cmdmsg.readBinArg(mm);
-    //lcd.printAt(1, "cmd %d, res %d",
-    //    cmdmsg.CommandID(), cmdmsg.available());
+void movement_callback(SMessagePDU::Message *msg, void *) {
+    Protocol::Movement *mm = msg->get<Protocol::Movement>();
+
+    lcd.printAt(0, "%d %u", mm->motors[0].power, mm->motors[0].duration);
+    lcd.printAt(1, "%d %u", mm->motors[1].power, mm->motors[1].duration);
 }
 
 
-void setup_cmdmsg() {
+void unhandled_message(SMessagePDU::Message *msg, void *) {
+    lcd.printAt(1, "type:%02hhu size:%02hhu", msg->type, msg->size);
+}
+
+void setup_smsg() {
+    smsg.onMessage(1, movement_callback);
+    smsg.onUnhandledMessage(unhandled_message);
 }
 
 void setup()
 {
     init_serial();
     setup_l298n();
-    setup_cmdmsg();
-
-    const char *str = "hello kitty";
-    smsg.send('d', str, strlen(str));
+    setup_smsg();
 }
 
+
+#define set_interval(interval, proc) ({         \
+    static unsigned long __expires = millis();  \
+    if (millis() >= __expires) {                \
+        (proc);                                 \
+        __expires = millis() + interval;        \
+    }                                           \
+})
 
 unsigned int count = 0;
 void loop()
 {
-    lcd.printAt(0, "%02d bytes on wire", s1.available());
-    if (s1.available())
-    {
-        s1.read();
-    }
+    set_interval(1000, {
+        const char *str = "hello kitty";
+        smsg.send(2, str, strlen(str));
+    });
+
+    //set_interval(100, {
+    //    lcd.printAt(0, "%02d bytes on wire", s1.available());
+    //});
+
+    //if (s1.available()) {
+        smsg.feed();
+    //}
+    
 }
