@@ -8,6 +8,8 @@ void loop();
 #include <CmdMessenger.h>
 #include "lcd1602.h"
 #include "movement.h"
+#include "smessage.h"
+#include "arduino-serial-source.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
@@ -17,8 +19,9 @@ void loop();
 LCD1602 lcd;
 SoftwareSerial s2(S1RX, S1TX);
 #define s1      Serial
-CmdMessenger cmdmsg = CmdMessenger(s1);
 
+SerialSource serial_source(&s1);
+SMessage smsg(&serial_source);
 
 void init_serial() {
     s1.begin(9600);
@@ -40,13 +43,12 @@ void setup_l298n() {
 void movement_callback(void) {
     Protocol::Movement mm;
     //int res = cmdmsg.readBinArg(mm);
-    lcd.printAt(1, "cmd %d, res %d",
-        cmdmsg.CommandID(), cmdmsg.available());
+    //lcd.printAt(1, "cmd %d, res %d",
+    //    cmdmsg.CommandID(), cmdmsg.available());
 }
 
 
 void setup_cmdmsg() {
-    cmdmsg.attach(movement_callback);
 }
 
 void setup()
@@ -54,6 +56,9 @@ void setup()
     init_serial();
     setup_l298n();
     setup_cmdmsg();
+
+    const char *str = "hello kitty";
+    smsg.send('d', str, strlen(str));
 }
 
 
@@ -64,20 +69,5 @@ void loop()
     if (s1.available())
     {
         s1.read();
-        //lcd.printAt(1, "%04u", ++count);
-        cmdmsg.feedinSerialData();
-        //String str = s1.readStringUntil('\0');
-        //if (str.length())
-        //{
-        //    sscanf(str.c_str(), "%d %d %d %d", outval, outval + 1,
-        //        outval + 2, outval + 3);
-
-        //    lcd.printAt(1, "%03d %03d %03d %03d", outval[0], outval[1], 
-        //        outval[2], outval[3]);
-        //    for (int i = 0; i < ARRAY_SIZE(inpin); ++i)
-        //    {
-        //        analogWrite(inpin[i], min(outval[i], 255));
-        //    }
-        //}
     }
 }
