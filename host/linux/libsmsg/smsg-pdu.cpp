@@ -1,5 +1,6 @@
 #include <alloca.h>
-#include "arduino-missing.h"
+#include <stdlib.h>
+#include <string.h>
 #include "smsg-pdu.h"
 
 void SMessagePDU::setupRawMessageCallback()
