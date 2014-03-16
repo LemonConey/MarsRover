@@ -19,9 +19,9 @@ public:
     int feed();
     void onMessage(uint8_t type, 
         SMessagePDU::MessageCallbackProc callback,
-        void *userdata);
+        void *userdata = NULL);
     void onUnhandledMessage(SMessagePDU::MessageCallbackProc callback,
-        void *userdata);
+        void *userdata = NULL);
 private:
     SMessagePDU     m_msgPdu;
     SMessageSource  *m_msgSrouce;
