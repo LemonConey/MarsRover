@@ -1,3 +1,4 @@
+#include <alloca.h>
 #include "smessage.h"
 
 void SMessage::onUnhandledMessage( SMessagePDU::MessageCallbackProc callback )

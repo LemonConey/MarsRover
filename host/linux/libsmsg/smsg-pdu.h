@@ -2,13 +2,14 @@
 #define __SMSG_PDU_H__
 
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <map>
+#include <assert.h>
 #include "smsg-coder.h"
 
 #define SMSG_PDU_MESSAGE_SIZE_VALIDATION
-#define SMSG_PDU_DEFALFT_CALLBACK_INDEX      -1
+#define SMSG_PDU_DEFALFT_CALLBACK_INDEX     0
+#define SMSG_PDU_MAX_CALLBACK_COUNT         32
+
 class SMessagePDU {
 public:
     struct Message {
@@ -45,13 +46,17 @@ public:
     void onMessage(uint8_t type, MessageCallbackProc callback);
     void onUnhandledMessage(MessageCallbackProc callback);
 private:
-
+    struct MessageCallbackEntry {
+        uint8_t             type;
+        MessageCallbackProc callback;
+    };
     void processRawMessage(const char *buf, size_t size);
     static void rawMessageCallback(const char *buf, size_t size, void *arg);
     void setupRawMessageCallback();
 
-    SMessageCoder                       m_coder;
-    std::map<int, MessageCallbackProc>  m_callbacks;
+    SMessageCoder                   m_coder;
+    MessageCallbackEntry            m_callbacks[SMSG_PDU_MAX_CALLBACK_COUNT];
+    MessageCallbackProc             m_default_callback;
 };
 
 #endif // __SMSG_PDU_H__

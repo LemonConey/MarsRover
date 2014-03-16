@@ -1,7 +1,11 @@
+#include <alloca.h>
+#include "arduino-missing.h"
 #include "smsg-pdu.h"
 
 void SMessagePDU::setupRawMessageCallback()
 {
+    memset(m_callbacks, 0, sizeof(m_callbacks));
+    m_default_callback = NULL;
     m_coder.onDecode(rawMessageCallback, this);
 }
 
@@ -20,11 +24,18 @@ void SMessagePDU::processRawMessage( const char *buf, size_t size )
     }
 #endif // SMSG_PDU_MESSAGE_SIZE_VALIDATION
 
-    if (m_callbacks.count(msg->type)) {
-        m_callbacks[msg->type](msg);
+    for (size_t i = 0; i < SMSG_PDU_MAX_CALLBACK_COUNT; ++i) {
+        if (!m_callbacks[i].callback) {
+            break;
+        }
+        if (m_callbacks[i].type == msg->type) {
+            m_callbacks[i].callback(msg);
+            return ;
+        }
     }
-    else if (m_callbacks.count(SMSG_PDU_DEFALFT_CALLBACK_INDEX)) {
-        m_callbacks[SMSG_PDU_DEFALFT_CALLBACK_INDEX](msg);
+    
+    if (m_default_callback) {
+        m_default_callback(msg);
     }
 }
 
@@ -35,12 +46,29 @@ void SMessagePDU::feed( const char data )
 
 void SMessagePDU::onUnhandledMessage( MessageCallbackProc callback )
 {
-    m_callbacks[SMSG_PDU_DEFALFT_CALLBACK_INDEX] = callback;
+    m_default_callback = callback;
 }
 
 void SMessagePDU::onMessage( uint8_t type, MessageCallbackProc callback )
 {
-    m_callbacks[type] = callback;
+    MessageCallbackEntry *entry = NULL;
+    for (size_t i = 0; i < SMSG_PDU_MAX_CALLBACK_COUNT; ++i) {
+        // first available entry
+        if (!entry && !m_callbacks[i].callback) {
+            entry = m_callbacks + i;
+        }
+
+        // replace current callback
+        if (m_callbacks[i].callback && m_callbacks[i].type == type) {
+            entry = m_callbacks + i;
+            break;
+        }
+    }
+ 
+    // if entry is null, you need to enlarge the SMSG_PDU_MAX_CALLBACK_COUNT
+    assert(entry);
+    entry->type = type;
+    entry->callback = callback;
 }
 
 bool SMessagePDU::encode( uint8_t type, const char *inbuf, size_t insize, char *outbuf, size_t *outsize )

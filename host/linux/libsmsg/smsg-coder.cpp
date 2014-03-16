@@ -1,3 +1,4 @@
+#include "arduino-missing.h"
 #include "smsg-coder.h"
 
 void SMessageCoder::endMessage()
