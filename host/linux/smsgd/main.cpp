@@ -67,31 +67,47 @@ SMessage *get_udp_smsg() {
     return msg;
 }
 
-Thread *create_message_thread(SMessage *reader, SMessage *writer) {
+Thread *create_serial_thread() {
     Thread *thread = new Thread();
-    SMessage *smsgs[2] = {reader, writer};
-
-    // can't directly pass the args through [&]
     thread->start([](void * arg) {
-        SMessage **smsgs = (SMessage **)arg;
-        SMessage *reader = smsgs[0];
-        SMessage *writer = smsgs[1];
-
-        reader->onUnhandledMessage([&](SMessagePDU::Message *msg, void *arg) {
-            SMessage *writer = (SMessage *)arg;
-            printf("[%s]read msg type:%hhd size:%hhd\n", 
-                writer == get_serial_smsg() ? "udp" : "serial",
+        get_serial_smsg()->onUnhandledMessage([](SMessagePDU::Message *msg, void *) {
+            printf("[serial]read msg type:%hhd size:%hhd\n", 
                 msg->type, msg->size);
-            writer->send(msg->type, msg->data, msg->size);
-        }, writer);
+            get_udp_conn()->sendBytes(msg, msg->size + sizeof(*msg));
+        });
 
         while (1) {
-            if (reader->feed() == 0) {
+            if (get_serial_smsg()->feed() == 0) {
                 usleep(1000);
             }
         }
-    }, smsgs);
-    sleep(1);
+    });
+    return thread;
+}
+
+Thread *create_udp_thread() {
+    Thread *thread = new Thread();
+    thread->start([](void * arg) {
+        DatagramSocket *sock = get_udp_conn();
+        while (1) {
+            char buffer[256];
+            int ret = sock->receiveBytes(buffer, sizeof(buffer));
+            if (ret > 0) {
+                SMessagePDU::Message *msg = (SMessagePDU::Message *)buffer;
+                if ((size_t)ret != msg->size + sizeof(*msg)) {
+                    printf("[udp] invalid msg type:%hhu size:%hhu ret:%d\n",
+                        msg->type, msg->size, ret);
+                }
+                else {
+                    printf("[udp] read msg type:%hhu size:%hhu\n",
+                        msg->type, msg->size);
+                    get_serial_smsg()->send(msg->type, msg->data, msg->size);
+                }
+                
+            }
+            
+        }
+    }, NULL);
     return thread;
 }
 
@@ -115,9 +131,8 @@ int main(int argc, char **argv) {
         printf("exception warmup?\n");
     }
 
-    Thread *serialThread = create_message_thread(get_serial_smsg(), get_udp_smsg());
-    Thread *udpThread = create_message_thread(get_udp_smsg(), get_serial_smsg());
-
+    Thread *serialThread = create_serial_thread();
+    Thread *udpThread = create_udp_thread();
     serialThread->join();
     udpThread->join();
 
