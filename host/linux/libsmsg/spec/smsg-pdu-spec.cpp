@@ -8,7 +8,7 @@ using namespace std;
 class SMessagePDUSpec : public Test {
 protected:
     void SetUp() {
-        msgpdu = new SMessagePDU(&coder);
+        msgpdu = new SMessagePDU();
     }
     void TearDown() {
         delete msgpdu;
@@ -29,7 +29,6 @@ protected:
     }
 
     SMessagePDU     *msgpdu;
-    SMessageCoder   coder;
 };
 
 SMessagePDU::Message *message = NULL;
