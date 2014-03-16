@@ -39,8 +39,8 @@ void loop()
     //    lcd.printAt(0, "%02d bytes on wire", s1.available());
     //});
 
-    //if (s1.available()) {
+    if (s1.available()) {
         get_smessage()->feed();
-    //}
+    }
     
 }
