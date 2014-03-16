@@ -73,7 +73,13 @@ Thread *create_serial_thread() {
         get_serial_smsg()->onUnhandledMessage([](SMessagePDU::Message *msg, void *) {
             printf("[serial]read msg type:%hhd size:%hhd\n", 
                 msg->type, msg->size);
-            get_udp_conn()->sendBytes(msg, msg->size + sizeof(*msg));
+            try {
+                get_udp_conn()->sendBytes(msg, msg->size + sizeof(*msg));
+            }
+            catch (std::exception &e) {
+                printf("send error:%s\n", e.what());
+            }
+            
         });
 
         while (1) {
