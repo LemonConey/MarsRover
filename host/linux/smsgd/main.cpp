@@ -20,8 +20,9 @@ using namespace Poco::Net;
 using namespace LibSerial;
 
 // #define SERIAL_PORT "/dev/ttyUSB0"
-#define SERIAL_PORT "/dev/ttyACM0"
-
+#define SERIAL_PORT         "/dev/ttyACM0"
+#define UDP_LOCAL_PORT      4000
+#define UDP_REMOTE_PORT     5000
 //#define DEBUG
 
 SerialPort *get_serial_conn() {
@@ -46,8 +47,8 @@ DatagramSocket *get_udp_conn() {
     if (udpSocket == NULL) {
         udpSocket = new DatagramSocket();
         try {
-            udpSocket->bind(SocketAddress("0.0.0.0", 4000), true);
-            udpSocket->connect(SocketAddress("127.0.0.1", 5000));
+            udpSocket->bind(SocketAddress("0.0.0.0", UDP_LOCAL_PORT), true);
+            udpSocket->connect(SocketAddress("127.0.0.1", UDP_REMOTE_PORT));
         }
         catch (exception &e) {
             printf("exception %s\n", e.what());
@@ -56,56 +57,43 @@ DatagramSocket *get_udp_conn() {
 
     return udpSocket;
 }
+SMessage *get_serial_smsg() {
+    static SMessage *msg = new SMessage(new SerialSource(get_serial_conn()));
+    return msg;
+}
 
+SMessage *get_udp_smsg() {
+    static SMessage *msg = new SMessage(new UDPSource(get_udp_conn()));
+    return msg;
+}
 
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-
-#ifdef NDEBUG
-#define ensure(x)   x
-#else
-#define ensure      assert
-#endif
-
-Thread *create_serial_thread() {
+Thread *create_message_thread(SMessage *reader, SMessage *writer) {
     Thread *thread = new Thread();
-    thread->start([&](void *) {
-        printf("serial thread in\n");
-        SerialSource serialSource(get_serial_conn());
-        SMessage smsgSerial(&serialSource);
+    SMessage *smsgs[2] = {reader, writer};
 
-        smsgSerial.onUnhandledMessage([](SMessagePDU::Message *msg) {
-            printf("read msg type:%hhd size:%hhd\n", 
+    // can't directly pass the args through [&]
+    thread->start([](void * arg) {
+        SMessage **smsgs = (SMessage **)arg;
+        SMessage *reader = smsgs[0];
+        SMessage *writer = smsgs[1];
+
+        reader->onUnhandledMessage([&](SMessagePDU::Message *msg, void *arg) {
+            SMessage *writer = (SMessage *)arg;
+            printf("[%s]read msg type:%hhd size:%hhd\n", 
+                writer == get_serial_smsg() ? "udp" : "serial",
                 msg->type, msg->size);
-        });
+            writer->send(msg->type, msg->data, msg->size);
+        }, writer);
 
         while (1) {
-            if (smsgSerial.feed() == 0) {
+            if (reader->feed() == 0) {
                 usleep(1000);
             }
         }
-    });
+    }, smsgs);
+    sleep(1);
     return thread;
 }
-
-Thread *create_udp_thread() {
-    Thread *thread = new Thread();
-    thread->start([&](void *) {
-        printf("udp thread in\n");
-        UDPSource udpSource(get_udp_conn());
-        SMessage smsgUDP(&udpSource);
-
-        smsgUDP.onUnhandledMessage([](SMessagePDU::Message *msg) {
-            printf("read msg type:%hhd size:%hhd\n", 
-                msg->type, msg->size);
-        });
-
-        while (1) {
-            smsgUDP.feed();
-        }
-    });
-    return thread;
-}
-
 
 int main(int argc, char **argv) {
 
@@ -113,11 +101,22 @@ int main(int argc, char **argv) {
         printf("can't open serial %s\n", SERIAL_PORT);
         return -1;
     }
+    if (!get_udp_conn()) {
+        printf("can't create udp port\n");
+        return -1;
+    }
 
     printf("cmdmsg started\n");
 
-    Thread *serialThread = create_serial_thread();
-    Thread *udpThread = create_udp_thread();
+    try {
+        throw exception();
+    }
+    catch (std::exception &e) {
+        printf("exception warmup?\n");
+    }
+
+    Thread *serialThread = create_message_thread(get_serial_smsg(), get_udp_smsg());
+    Thread *udpThread = create_message_thread(get_udp_smsg(), get_serial_smsg());
 
     serialThread->join();
     udpThread->join();

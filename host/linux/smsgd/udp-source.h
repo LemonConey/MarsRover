@@ -11,7 +11,13 @@ public:
     }
 
     virtual int send(const char *buffer, size_t size) {
-        return m_comm->sendBytes(buffer, size);
+        try {
+            return m_comm->sendBytes(buffer, size);
+        }
+        catch (std::exception &e) {
+            return -1;
+        }
+
     }
     virtual int receive(char *outBuffer, size_t outSize)
     {
