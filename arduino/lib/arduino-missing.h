@@ -1,0 +1,1 @@
+../../host/linux/libsmsg/arduino-missing.h
