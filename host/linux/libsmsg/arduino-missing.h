@@ -21,8 +21,8 @@ inline static void *memset(void *s, int c, size_t count)
         *xs++ = c;
     return s;
 }
+#else 
+#include <memory.h>
 #endif
-
-
 
 #endif // __ARDUINO_MISSING_H__
