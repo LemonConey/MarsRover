@@ -3,7 +3,16 @@ require 'socket'
 require 'io/console'
 namespace :spike do
 
-
+  desc "register commands"
+  task :register do
+    sock = UDPSocket.new 
+    sock.send "register all", 0, "192.168.2.179", 4000
+    loop do
+      ap sock.recv 256
+    end
+  end
+  
+  desc "send commands"
   task :udpsender do
 
     sock = UDPSocket.new
