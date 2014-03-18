@@ -11,6 +11,7 @@
 #include "smessage.h"
 #include "serial-source.h"
 #include "udp-source.h"
+#include "text-client-mgr.h"
 
 using namespace std;
 using namespace Poco;
@@ -48,7 +49,6 @@ DatagramSocket *get_udp_conn() {
         udpSocket = new DatagramSocket();
         try {
             udpSocket->bind(SocketAddress("0.0.0.0", UDP_LOCAL_PORT), true);
-            udpSocket->connect(SocketAddress("127.0.0.1", UDP_REMOTE_PORT));
         }
         catch (exception &e) {
             printf("exception %s\n", e.what());
@@ -74,7 +74,7 @@ Thread *create_serial_thread() {
             printf("[serial]read msg type:%hhd size:%hhd\n", 
                 msg->type, msg->size);
             try {
-                get_udp_conn()->sendBytes(msg, msg->size + sizeof(*msg));
+                //get_udp_conn()->sendBytes(msg, msg->size + sizeof(*msg));
             }
             catch (std::exception &e) {
                 printf("send error:%s\n", e.what());
@@ -93,10 +93,18 @@ Thread *create_udp_thread() {
     Thread *thread = new Thread();
     thread->start([](void * arg) {
         DatagramSocket *sock = get_udp_conn();
+        printf("start udp thread\n");
         while (1) {
             char buffer[256];
-            int ret = sock->receiveBytes(buffer, sizeof(buffer));
+            SocketAddress address;
+            int ret = sock->receiveFrom(buffer, sizeof(buffer) - 1, address);
             if (ret > 0) {
+                buffer[ret] = 0;
+                if (TextClientManager::getInstance()->processCommand(buffer, address)) {
+                    printf("handled [%s]\n", buffer);
+                    continue;
+                }
+                
                 SMessagePDU::Message *msg = (SMessagePDU::Message *)buffer;
                 if ((size_t)ret != msg->size + sizeof(*msg)) {
                     printf("[udp] invalid msg type:%hhu size:%hhu ret:%d\n",
@@ -116,6 +124,13 @@ Thread *create_udp_thread() {
 }
 
 int main(int argc, char **argv) {
+    try {
+        throw exception();
+    }
+    catch (std::exception &e) {
+        printf("exception warmup?\n");
+    }
+    create_udp_thread()->join();
 
     if (!get_serial_conn()) {
         printf("can't open serial %s\n", SERIAL_PORT);
@@ -128,12 +143,6 @@ int main(int argc, char **argv) {
 
     printf("cmdmsg started\n");
 
-    try {
-        throw exception();
-    }
-    catch (std::exception &e) {
-        printf("exception warmup?\n");
-    }
 
     Thread *serialThread = create_serial_thread();
     Thread *udpThread = create_udp_thread();
