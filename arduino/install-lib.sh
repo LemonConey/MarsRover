@@ -16,6 +16,6 @@ function install {
 
 #echo will install libraries to $ARDUINO_LIB
 
-install lib rover-lib
+install lib RoverLib
 install nanopb nanopb
-install protocol rover-proto
+install protocol RoverProto
