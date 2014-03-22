@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
     catch (std::exception &e) {
         printf("exception warmup?\n");
     }
-    create_udp_thread()->join();
+//    create_udp_thread()->join();
 
     if (!get_serial_conn()) {
         printf("can't open serial %s\n", SERIAL_PORT);
