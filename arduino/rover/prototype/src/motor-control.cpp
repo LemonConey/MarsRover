@@ -35,12 +35,14 @@ static void update_l298n(int index, int power) {
         analogWrite(inpin[basePin + 1], 0);
     }
 
-    get_lcd1602()->printAt(index, "%04d", power);
 }
 
 static void movement_callback(SMessagePDU::Message *msg, void *) {
     Protocol::Movement *mm = msg->get<Protocol::Movement>();
 
+    get_lcd1602()->printAt(1, "%04d %04d       ", 
+        mm->motors[0].power,
+        mm->motors[1].power);
 
     for (size_t i = 0; i < ARRAY_SIZE(motors); ++i) {
         motors[i].expires = millis() + mm->motors[i].duration;
@@ -61,6 +63,7 @@ void update_motor_state()
     for (size_t i = 0; i < ARRAY_SIZE(motors); ++i) {
         if (motors[i].expires && millis() >= motors[i].expires) {
             update_l298n(i, 0);
+            get_lcd1602()->printAt(1, "stop all motors");
             motors[i].expires = 0;
         }
     }
