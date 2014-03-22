@@ -22,11 +22,13 @@ void setup()
     init_serial();
     init_smessage(&s1);
     setup_motor_control();
+
 }
 
 unsigned int count = 0;
 void loop()
 {
+    get_lcd1602()->printAt(0, "Rover MX01 Ready!");
     set_interval(1000, {
         const char *str = "hello kitty";
         get_smessage()->send(2, str, strlen(str));
