@@ -3,3 +3,8 @@ cc_binary(
   srcs = ['serial/main.cpp'],
   deps = ['#serial']
 )
+
+cc_binary(
+  name = 'raw',
+  srcs = ['raw-serial/main.cpp']
+)
