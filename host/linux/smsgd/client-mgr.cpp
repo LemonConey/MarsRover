@@ -1,3 +1,4 @@
+#include <Poco/Net/NetException.h>
 #include <algorithm>
 #include "client-mgr.h"
 
@@ -34,17 +35,36 @@ void ClientManager::deregister(const uint8_t type) {
     deregisterInternal(type);
 }
 
+void ClientManager::deregister( const Poco::Net::DatagramSocket *socket )
+{
+    ScopedWriteRWLock guard(m_clients_lock);
+    std::for_each(m_clients.begin(), m_clients.end(), [&](Clients::value_type &client){
+        m_clients.erase(client.first);
+        return;
+    });
+}
+
+
 void ClientManager::deregisterDefault() {
     deregisterInternal(CLIENT_MANAGER_DEFAULT_SOCKET_TYPE);
 }
 
 bool ClientManager::send(const uint8_t type, const char *buffer, size_t size) {
-    ScopedReadRWLock guard(m_clients_lock);
+    m_clients_lock.readLock();
     DatagramSocket *socket = getSocket(type);
     if (socket) {
-        int ret = socket->sendBytes(buffer, size);
-        return ret == (int)size;
+        try {
+            int ret = socket->sendBytes(buffer, size);
+            m_clients_lock.unlock();
+            return ret == (int)size;
+        }
+        catch (ConnectionRefusedException &e) {
+            m_clients_lock.unlock();
+            deregister(socket);
+            throw e;
+        }
     }
+    m_clients_lock.unlock();
     return false;
 }
 

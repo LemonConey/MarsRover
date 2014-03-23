@@ -22,6 +22,7 @@ public:
     Poco::Net::DatagramSocket *registerDefault(
         const Poco::Net::SocketAddress &address);
     void deregister(const uint8_t type);
+    void deregister(const Poco::Net::DatagramSocket *socket);
     void deregisterDefault();
 
 private:
