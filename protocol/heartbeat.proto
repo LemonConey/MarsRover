@@ -1,0 +1,7 @@
+message Heartbeat {
+	enum Message {
+		Id = 1;
+	}
+	required int32 millis = 1;
+	required int32 ticks = 2;
+}

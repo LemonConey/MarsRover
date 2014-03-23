@@ -6,6 +6,7 @@ void loop();
 #include "rover-common.h"
 #include <SoftwareSerial.h>
 
+#include "heartbeat.pb.h"
 
 LCD1602 * get_lcd1602()
 {
@@ -27,12 +28,15 @@ void setup()
 
 }
 
-unsigned int count = 0;
+Heartbeat heartbeat;
+
 void loop()
 {
+    ++heartbeat.ticks;
     set_interval(1000, {
-        const char *str = "hello kitty";
-        get_smessage()->send(2, str, strlen(str));
+        heartbeat.millis = millis();
+        send_protobuf_msg(Heartbeat, heartbeat);
+        heartbeat.ticks = 0;
     });
 
     set_interval(1, {
