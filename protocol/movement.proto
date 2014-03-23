@@ -1,0 +1,4 @@
+message Movement {
+	repeated sint32 power = 1;
+	required int32 duration = 2;
+}
