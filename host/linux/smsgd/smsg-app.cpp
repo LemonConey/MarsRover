@@ -100,19 +100,26 @@ void SMessageApp::handleOption( const std::string & name, const std::string & va
 
 bool SMessageApp::setupSerial()
 {
-    SerialPort *serial_port = new SerialPort(m_serial_port);
-    serial_port->Open(SerialPort::BAUD_9600,
-        SerialPort::CHAR_SIZE_8,
-        SerialPort::PARITY_NONE,
-        SerialPort::STOP_BITS_1,
-        SerialPort::FLOW_CONTROL_NONE);
+    try {
+        SerialPort *serial_port = new SerialPort(m_serial_port);
+        serial_port->Open(SerialPort::BAUD_9600,
+            SerialPort::CHAR_SIZE_8,
+            SerialPort::PARITY_NONE,
+            SerialPort::STOP_BITS_1,
+            SerialPort::FLOW_CONTROL_NONE);
 
-    if (!serial_port->IsOpen()) {
-        delete serial_port;
+        if (!serial_port->IsOpen()) {
+            delete serial_port;
+            return false;
+        }
+
+        m_serial_msg = new SMessage(new SerialSource(serial_port));
+    }
+    catch (exception &e) {
+        logerror("open '%s' failed, e:%s", m_serial_port.c_str(), e.what());
         return false;
     }
     
-    m_serial_msg = new SMessage(new SerialSource(serial_port));
     return true;
 }
 
