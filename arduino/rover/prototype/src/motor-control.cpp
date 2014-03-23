@@ -1,5 +1,6 @@
 #include "rover-common.h"
 #include "movement.h"
+#include "movement.pb.h"
 
 static int inpin[] = {
     MOTOR_L298N_IN1, 
@@ -38,23 +39,29 @@ static void update_l298n(int index, int power) {
 }
 
 static void movement_callback(SMessagePDU::Message *msg, void *) {
-    Protocol::Movement *mm = msg->get<Protocol::Movement>();
+    get_lcd1602()->printAt(0, "receive %d", msg->size);
 
-    get_lcd1602()->printAt(1, "%04d %04d       ", 
-        mm->motors[0].power,
-        mm->motors[1].power);
+    Movement mm;
+    pb_istream_t istream = pb_istream_from_buffer((uint8_t*)msg->data, msg->size);
+    pb_decode(&istream, Movement_fields, &mm);
 
-    for (size_t i = 0; i < ARRAY_SIZE(motors); ++i) {
-        motors[i].expires = millis() + mm->motors[i].duration;
-        update_l298n(i, mm->motors[i].power);
-    }
+    get_lcd1602()->printAt(1, "duration %d", mm.duration);
+
+    //get_lcd1602()->printAt(1, "%04d %04d       ", 
+    //    mm->motors[0].power,
+    //    mm->motors[1].power);
+
+    //for (size_t i = 0; i < ARRAY_SIZE(motors); ++i) {
+    //    motors[i].expires = millis() + mm->motors[i].duration;
+    //    update_l298n(i, mm->motors[i].power);
+    //}
 }
 
 
 void setup_motor_control() {
     memset(motors, 0, sizeof(motors));
     setup_l298n();
-    get_smessage()->onMessage(1, movement_callback);
+    get_smessage()->onMessage(Movement_Message_Id, movement_callback);
 }
 
 
