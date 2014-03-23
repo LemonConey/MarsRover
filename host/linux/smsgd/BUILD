@@ -5,7 +5,7 @@ cc_binary(
     'client-mgr.cpp',
     'text-client-mgr.cpp'
     ],
-  deps = ['#serial', '#PocoFoundation', '#PocoNet', '//libsmsg/:smsg'],
+  deps = ['#serial', '#pthread', '#PocoFoundation', '#PocoNet', '//libsmsg/:smsg'],
   extra_cppflags = ['-std=gnu++0x']
 )
 
