@@ -80,7 +80,7 @@ void SMessageApp::defineOptions( OptionSet & options )
     ServerApplication::defineOptions(options);
     options.addOption(Option("udp-port", "p").argument("udp-port"));
     options.addOption(Option("serial-port", "s").argument("serial-port"));
-    options.addOption(Option("log-file", "l").argument("log-file"));
+    options.addOption(Option("logfile", "l").argument("logfile"));
 }
 
 void SMessageApp::handleOption( const std::string & name, const std::string & value )
@@ -93,7 +93,7 @@ void SMessageApp::handleOption( const std::string & name, const std::string & va
     else if (name == "udp-port") {
         m_udp_port = atoi(value.c_str());
     }
-    else if (name == "log-file") {
+    else if (name == "logfile") {
         m_log_file = value;
     }
 }
