@@ -5,14 +5,14 @@ namespace :spike do
 
   @remote_ip = "192.168.1.150"
   @remote_port = 4000
+  @remote_ip = ENV["remote"] unless ENV["remote"].nil?
 
   desc "register commands"
   task :register do
-    sock = UDPSocket.new 
+    sock = UDPSocket.new
     sock.send "register all", 0, @remote_ip, @remote_port
     p "register sent"
     loop do
-      p "receive"
       ap sock.recv 256
     end
   end
@@ -20,8 +20,9 @@ namespace :spike do
   desc "send commands"
   task :control do
 
+    ap "remote #{@remote_ip}:#{@remote_port}"
+
     sock = UDPSocket.new
-    #sock.bind "localhost", 5000
 
     Thread.new {
       loop do
