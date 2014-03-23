@@ -12,11 +12,11 @@
 #include "serial-source.h"
 #include "udp-source.h"
 #include "text-client-mgr.h"
+#include "smsg-app.h"
 
 using namespace std;
 using namespace Poco;
 using namespace Poco::Net;
-
 
 using namespace LibSerial;
 
@@ -124,6 +124,9 @@ Thread *create_udp_thread() {
 }
 
 int main(int argc, char **argv) {
+
+    return SMessageApp().run(argc, argv);
+
     try {
         throw exception();
     }
