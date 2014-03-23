@@ -7,7 +7,13 @@ require 'protobuf/message'
 ##
 # Message Classes
 #
-class Movement < ::Protobuf::Message; end
+class Movement < ::Protobuf::Message
+  class Message < ::Protobuf::Enum
+    define :Id, 2
+  end
+
+end
+
 
 
 ##

@@ -1,4 +1,7 @@
 message Movement {
+	enum Message {
+		Id = 2;
+	}
 	repeated sint32 power = 1;
 	required int32 duration = 2;
 }
