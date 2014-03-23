@@ -3,3 +3,4 @@ source 'http://ruby.taobao.org'
 
 gem 'awesome_print'
 gem 'bindata'
+gem 'protobuf'
