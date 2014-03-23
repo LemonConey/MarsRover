@@ -1,6 +1,7 @@
 require 'bindata'
 require 'socket'
 require 'io/console'
+require 'protobuf'
 namespace :spike do
 
   @remote_ip = "192.168.1.150"
@@ -13,10 +14,19 @@ namespace :spike do
     sock.send "register all", 0, @remote_ip, @remote_port
     p "register sent"
     loop do
-      ap sock.recv 256
+      bytes = sock.recv 256
+      header = Protocol::SMessagePDU::Header.read bytes
+      ap header
+      begin
+        hb = Heartbeat.new
+        hb.parse_from_string header.payload.to_s
+        ap hb
+      rescue => e
+        ap e
+      end
     end
   end
-  
+
   desc "send commands"
   task :control do
 
@@ -30,6 +40,8 @@ namespace :spike do
       end
     }
 
+    ap Movement::Message::Id
+
     power = 100
     duration = 1000
 
@@ -39,30 +51,27 @@ namespace :spike do
         exit
       end
 
-      mm = [Protocol::Movement.new, Protocol::Movement.new]
+
+      mm = Movement.new
 
       case ch
         when 'q'
           exit
         when 'w'
-          mm[0].power = power
-          mm[1].power = power
+          mm.power = [power, power]
         when 's'
-          mm[0].power = -power
-          mm[1].power = -power
+          mm.power = [-power, -power]
         when 'a'
-          mm[0].power = -power
-          mm[1].power = power
+          mm.power = [-power, power]
         when 'd'
-          mm[0].power = power
-          mm[1].power = -power
+          mm.power = [power, -power]
       end
-      mm[0].duration = duration
-      mm[1].duration = duration
-      cmdbuf = Protocol::SMessagePDU.get_buffer 1, mm
-
+      mm.duration = duration
+      cmdbuf = Protocol::SMessagePDU.get_buffer mm.class::Message::Id.to_i, mm
+      ap mm
       ap "send #{cmdbuf} size #{cmdbuf.size}"
       sock.send cmdbuf, 0, @remote_ip, @remote_port
+
     end
 
   end
