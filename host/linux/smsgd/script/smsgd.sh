@@ -17,13 +17,13 @@ PIDFILE=/var/run/${NAME}.pid
 LOGFILE=/var/log/${NAME}.log
 
 start() {
-  if [ -f /var/run/$PIDNAME ] && kill -0 $(cat /var/run/$PIDNAME); then
+  if [ -f $PIDFILE ] && kill -0 $(cat $PIDFILE); then
     echo 'Service already running' >&2
     return 1
   fi
   echo 'Starting service…' >&2
-  local CMD="$SCRIPT &> \"$LOGFILE\" & echo \$!"
-  su -c "$CMD" $RUNAS > "$PIDFILE"
+  local CMD="$SCRIPT --daemon --pidfile=$PIDFILE --logfile=$LOGFILE & echo \$!"
+  su -c "$CMD" $RUNAS
   echo 'Service started' >&2
 }
 
@@ -35,6 +35,14 @@ stop() {
   echo 'Stopping service…' >&2
   kill -15 $(cat "$PIDFILE") && rm -f "$PIDFILE"
   echo 'Service stopped' >&2
+}
+
+status() {
+  if [ -f $PIDFILE ] && kill -0 $(cat $PIDFILE); then
+    echo 'Service is running' >&2
+  else
+    echo 'Service is not running' >&2
+  fi
 }
 
 uninstall() {
@@ -56,6 +64,9 @@ case "$1" in
     ;;
   stop)
     stop
+    ;;
+  status)
+    status
     ;;
   uninstall)
     uninstall
