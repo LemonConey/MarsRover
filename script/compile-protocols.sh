@@ -1,10 +1,11 @@
 #!/bin/bash
 
+PROTO_DIR=./protocol
 ARDUINO_PROTO_DIR=./arduino/protocol
-NANOPBC=./script/nanopb-protoc.sh
+RUBY_PROTO_DIR=./host/ruby/protocol
 
-FILES=`find protocol -name "*.proto"`
+protoc -I $PROTO_DIR --ruby_out $RUBY_PROTO_DIR $PROTO_DIR/*.proto
+protoc -I $PROTO_DIR --nanopb_out $ARDUINO_PROTO_DIR $PROTO_DIR/*.proto
 
-for file in $FILES; do
-	$NANOPBC $file $ARDUINO_PROTO_DIR
-done
+
+
