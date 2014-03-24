@@ -58,13 +58,17 @@ namespace :spike do
         when 'q'
           exit
         when 'w'
-          mm.power = [power, power]
+          mm.power = power
+          mm.direction = 0
         when 's'
-          mm.power = [-power, -power]
+          mm.power = -power
+          mm.direction = 0
         when 'a'
-          mm.power = [-power, power]
+          mm.power = power
+          mm.direction = -100
         when 'd'
-          mm.power = [power, -power]
+          mm.power = power
+          mm.direction = 100
       end
       mm.duration = duration
       cmdbuf = Protocol::SMessagePDU.get_buffer mm.class::Message::Id.to_i, mm

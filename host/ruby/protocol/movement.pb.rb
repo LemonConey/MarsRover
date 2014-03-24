@@ -20,7 +20,8 @@ end
 # Message Fields
 #
 class Movement
-  repeated :sint32, :power, 1
-  required :int32, :duration, 2
+  required :sint32, :power, 1
+  required :sint32, :direction, 2
+  required :int32, :duration, 3
 end
 
