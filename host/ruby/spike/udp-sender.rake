@@ -42,8 +42,8 @@ namespace :spike do
 
     ap Movement::Message::Id
 
-    power = 100
-    duration = 1000
+    power = 120
+    duration = 300
 
     loop do
       ch = STDIN.getch
