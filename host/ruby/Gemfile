@@ -5,3 +5,6 @@ gem 'awesome_print'
 gem 'bindata'
 gem 'protobuf'
 gem 'rake'
+group :development, :test do
+  gem 'rspec'
+end
