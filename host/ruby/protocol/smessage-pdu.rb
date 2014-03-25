@@ -1,6 +1,12 @@
 require 'bindata'
 require 'protobuf'
 
+class Class
+  def descendants
+    ObjectSpace.each_object(::Class).select { |klass| klass < self }
+  end
+end
+
 class SMessagePDU
   class Header < BinData::Record
     endian :little
@@ -23,11 +29,19 @@ class SMessagePDU
     nil
   end
 
-  def self.get_buffer type, data
-    buffer = [data].flatten.map(&:to_s).join
-    header = Header.new
-    header.type = type
-    header.datasize = buffer.size
-    header.to_binary_s + buffer
+  def self.parse buffer
+    msgpdu = Header.read buffer
+    return nil if msgpdu.datasize != msgpdu.payload.size
+
+    Protobuf::Message.descendants.each do |msg_class|
+      begin
+        return msg_class.new.tap { |pbinst|
+          pbinst.parse_from_string msgpdu.payload.to_s
+        } if msgpdu.type == msg_class::Message::Id
+      rescue => e
+      end
+    end
+
+    nil
   end
 end
