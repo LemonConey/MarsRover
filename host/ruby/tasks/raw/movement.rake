@@ -7,6 +7,7 @@ namespace :raw do
 
     power = (ENV["power"] || 120).to_i
     duration = (ENV["duration"] || 300).to_i
+    equalizing = (ENV["dir"] || 0).to_i
 
     loop do
       ch = STDIN.getch
@@ -14,7 +15,7 @@ namespace :raw do
       mm = Movement.new
       mm.power = power
       mm.duration = duration
-      mm.direction = 0
+      mm.direction = equalizing
 
       case ch
         when 'q'
@@ -23,9 +24,9 @@ namespace :raw do
         when 's'
           mm.power = -power
         when 'a'
-          mm.direction = -100
+          mm.direction = -100 + equalizing
         when 'd'
-          mm.direction = 100
+          mm.direction = 100 + equalizing
         else
           ap "illegal key #{ch}"
           next
