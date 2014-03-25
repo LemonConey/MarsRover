@@ -16,7 +16,7 @@ Dir.glob(File.expand_path("../protocol/*.rb", __FILE__)).each do |file|
 end
 
 # load rake tasks
-Dir.glob(File.expand_path("../tasks/*.rake", __FILE__)).each do |file|
+Dir.glob(File.expand_path("../tasks/**/*.rake", __FILE__)).each do |file|
   load file
 end
 

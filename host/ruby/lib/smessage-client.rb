@@ -14,7 +14,7 @@ class SMessageClient
   end
 
   def send msg
-    ap "send [#{serialize_message(msg)}] to #{@ip}:#{@port}"
+    ap "send [#{msg.to_hash}] to #{@ip}:#{@port}"
     @socket.send serialize_message(msg), 0, @ip, @port
   end
 
