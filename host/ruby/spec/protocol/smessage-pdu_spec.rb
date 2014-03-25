@@ -16,9 +16,11 @@ describe SMessagePDU do
       pbinst.stub(:serialize).and_return("hello world")
     end
 
-    it 'should return nil if message is nt the protobuf message instance' do
-      fakePBObj = Object.new
-      SMessagePDU.serialize(fakePBObj).should == nil
+    it 'should raise exception if message is not the protobuf message instance' do
+      expect {
+        fakePBObj = Object.new
+        SMessagePDU.serialize(fakePBObj)
+      }.to raise_error
     end
 
     it 'should serialize protobuf message with smessage header' do
@@ -40,10 +42,18 @@ describe SMessagePDU do
 
       SMessagePDU.parse("\5\4hehe").should == pbinst
     end
-    
-    it 'should return nil if no matched protobuf message is found' do
-      SMessagePDU.parse("\0xfe\4hehe").should == nil
+
+    it 'should raise TypeError if no matched protobuf message is found' do
+      expect {
+        ap SMessagePDU.parse("\377\4hehe").class
+      }.to raise_error(TypeError)
     end
-    
+
+    it 'should raise RangeError if datasize in SMessagePDU doesnt match the payload size' do
+      expect {
+        SMessagePDU.parse("\5\5hehe")
+      }.to raise_error(RangeError)
+    end
+
   end
 end

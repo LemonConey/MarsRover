@@ -16,7 +16,7 @@ class SMessagePDU
   end
 
   def self.serialize pbinstance
-    return nil unless pbinstance.class < Protobuf::Message
+    #return nil unless pbinstance.class < Protobuf::Message
     msgid = pbinstance.class::Message::Id.to_i
     pbmsg = pbinstance.serialize
     Header.new.tap { |header|
@@ -24,24 +24,23 @@ class SMessagePDU
       header.datasize = pbmsg.size
       header.payload = pbmsg
     }.to_binary_s
-  rescue => e
-    ap e
-    nil
   end
 
   def self.parse buffer
     msgpdu = Header.read buffer
-    return nil if msgpdu.datasize != msgpdu.payload.size
+    raise RangeError.new "unmatched payload size: in pdu #{msgpdu.datasize} actual #{msgpdu.payload.size}" if msgpdu.datasize != msgpdu.payload.size 
 
     Protobuf::Message.descendants.each do |msg_class|
       begin
-        return msg_class.new.tap { |pbinst|
-          pbinst.parse_from_string msgpdu.payload.to_s
-        } if msgpdu.type == msg_class::Message::Id
-      rescue => e
+        next unless msgpdu.type == msg_class::Message::Id
+      rescue
+        next
       end
+      return msg_class.new.tap { |pbinst|
+        pbinst.parse_from_string msgpdu.payload.to_s
+      }
     end
 
-    nil
+    raise TypeError.new "unknown Message ##{msgpdu.type}"
   end
 end
