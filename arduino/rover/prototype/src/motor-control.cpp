@@ -19,6 +19,10 @@ static void setup_l298n() {
 }
 
 static void update_l298n(int index, int power) {
+    char buf[32];
+    snprintf(buf, sizeof(buf), "idx:%d pwr:%d\r\n", index, power);
+    s1.write(buf);
+
     int basePin = index * 2;
     if (power > 0) {
         analogWrite(inpin[basePin], power);
@@ -35,13 +39,8 @@ static void update_l298n(int index, int power) {
 
 }
 
-static void movement_callback(SMessagePDU::Message *msg, void *) {
-    get_lcd1602()->printAt(0, "receive %d", msg->size);
-
-    Movement mm;
-    pb_istream_t istream = pb_istream_from_buffer((uint8_t*)msg->data, msg->size);
-    pb_decode(&istream, Movement_fields, &mm);
-
+static void process_movement(Movement *movement) {
+    const Movement &mm = *movement;
     get_lcd1602()->printAt(0, "%ld:%ld:%ld", 
         mm.power, mm.direction, mm.duration);
 
@@ -61,6 +60,24 @@ static void movement_callback(SMessagePDU::Message *msg, void *) {
 
     update_l298n(0, left);
     update_l298n(1, right);
+}
+
+void move(int power, int dir) {
+    Movement mm;
+    mm.power = power;
+    mm.direction = dir;
+    mm.duration = 100;
+    process_movement(&mm);
+}
+
+static void movement_callback(SMessagePDU::Message *msg, void *) {
+    get_lcd1602()->printAt(0, "receive %d", msg->size);
+
+    Movement mm;
+    pb_istream_t istream = pb_istream_from_buffer((uint8_t*)msg->data, msg->size);
+    pb_decode(&istream, Movement_fields, &mm);
+
+    process_movement(&mm);
 }
 
 

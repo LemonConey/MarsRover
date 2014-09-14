@@ -8,5 +8,6 @@
 
 
 #define s1      Serial
+#define sjoy    Serial1
 
 #endif // PIN_DEF_H__

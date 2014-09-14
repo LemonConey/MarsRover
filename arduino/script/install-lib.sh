@@ -19,3 +19,4 @@ function install {
 install lib RoverLib
 install nanopb nanopb
 install protocol RoverProto
+install vendor/U8glib U8glib
