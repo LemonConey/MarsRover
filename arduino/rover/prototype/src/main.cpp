@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <Servo.h> 
 
 void setup();
 void loop();
@@ -21,6 +22,9 @@ void init_serial() {
     sjoy.begin(9600);
 }
 
+Servo servox;
+Servo servoy;
+static int servox_angel = 90, servoy_angel = 90;
 extern void move(int power, int dir);
 void joystick_callback(JoystickControl::Message *message, void *arg) {
     char buf[64];
@@ -43,7 +47,30 @@ void joystick_callback(JoystickControl::Message *message, void *arg) {
         move(power, 80);
         break;
     default:
-        return;
+        break;
+    }
+
+    int delta = 10;
+    switch (message->id)
+    {
+    case JoystickControl::Message::A:
+        servoy_angel = max(0, servoy_angel - delta);
+        servoy.write(servoy_angel);
+        break;
+    case JoystickControl::Message::B:
+        servoy_angel = min(180, servoy_angel + delta);
+        servoy.write(servoy_angel);
+        break;
+    case JoystickControl::Message::C:
+        servox_angel = max(0, servox_angel - delta);
+        servox.write(servox_angel);
+        break;
+    case JoystickControl::Message::D:
+        servox_angel = min(180, servox_angel + delta);
+        servox.write(servox_angel);
+        break;
+    default:
+        break;
     }
 }
 
@@ -56,6 +83,8 @@ JoystickControl *get_joystick() {
     return js;
 }
 
+
+
 void setup()
 {
     init_serial();
@@ -64,7 +93,8 @@ void setup()
 
     get_lcd1602()->printAt(0, "Rover MX01 Ready!");
     get_joystick();
-
+    servox.attach(44);
+    servoy.attach(45);
 }
 
 Heartbeat heartbeat;
@@ -73,6 +103,11 @@ Heartbeat heartbeat;
 
 void loop()
 {
+    set_interval(3000, {
+        //servox.write(rand() % 180);
+        //servoy.write(rand() % 180);
+    });
+
     ++heartbeat.ticks;
     set_interval(1000, {
         heartbeat.millis = millis();
